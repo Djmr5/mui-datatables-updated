@@ -1,0 +1,55 @@
+{
+  "name": "mui-datatables-updated",
+  "version": "1.0.0",
+  "description": "MUI Datatable library inspired by the gregnb/mui-datatables project, featuring an up-to-date implementation with Typescript Support.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Djmr5/mui-datatables-updated.git"
+  },
+  "keywords": [
+    "MUI",
+    "mui-datatables",
+    "datatables",
+    "react-table",
+    "typescript",
+    "react",
+    "material-ui",
+    "data-table"
+  ],
+  "author": "Diego Jacobo Martínez Djmr5",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Djmr5/mui-datatables-updated/issues"
+  },
+  "homepage": "https://github.com/Djmr5/mui-datatables-updated#readme",
+  "peerDependencies": {
+    "@emotion/react": "^11.0.0",
+    "@emotion/styled": "^11.0.0",
+    "@mui/icons-material": "^6.0.0",
+    "@mui/material": "^6.0.0",
+    "@mui/utils": "^6.0.0",
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.0",
+    "@mui/material": "^6.4.0",
+    "@mui/utils": "^6.4.0",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "rollup": "^4.30.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "typescript": "^5.7.3"
+  }
+}
