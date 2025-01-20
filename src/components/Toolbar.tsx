@@ -1,9 +1,9 @@
+import { Close } from "@mui/icons-material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, Button, Checkbox, IconButton, InputBase, Popover, Slider, Stack, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Checkbox, IconButton, InputBase, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
-import { Close } from "@mui/icons-material";
 import { HeadCell } from "./TableHead";
 
 interface Filter {
@@ -44,6 +44,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
   const [filterConfig, setFilterConfig] = useState<FilterConfig[]>([]);
   // rest value to force re-render of filters
   const [resetCounter, setResetCounter] = useState(0);
+  const [openSearch, setOpenSearch] = useState(false);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -89,6 +90,10 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleSearchChange = () => {
+    setOpenSearch((prev) => !prev);
   };
 
   const open = Boolean(anchorEl);
@@ -137,11 +142,8 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
   return (
     <Toolbar
       sx={[
-        { pl: { sm: 2 }, pr: { sm: 1 } },
-        numSelected > 0 && {
-          bgcolor: (theme) =>
-            alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-        },
+        { px: { sm: 2 }, borderBottom: 1, borderColor: "divider" },
+        numSelected > 0 && { bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity) },
       ]}
     >
       {numSelected > 0 ? (
@@ -165,39 +167,46 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
           width="100%"
           alignItems="center"
         >
-          <Typography
-            sx={{ flex: "1 1 100%", alignContent: "center", paddingLeft: 1 }}
-            variant="h6"
-            id="tableTitle"
-            component="div"
-          >
-            {title}
-          </Typography>
-          <Box
-            sx={{
-              flexGrow: 1,
-              display: "flex",
-              alignItems: "center",
-              border: 1,
-              borderColor: "lightgray",
-              borderRadius: 1,
-            }}
-          >
-            <InputBase
-              placeholder="Search…"
-              onChange={(e) => onSearch(e.target.value)}
-              sx={{ marginLeft: 2, flex: 1, width: 180 }}
-            />
-            <IconButton>
+          {openSearch ? (
+            <Stack direction="row" alignItems="center">
+              <SearchIcon />
+              <TextField
+                placeholder="Search…"
+                onChange={(e) => onSearch(e.target.value)}
+                variant="standard"
+                autoFocus
+                fullWidth
+                sx={{ marginLeft: 1 }}
+              />
+              <IconButton
+                onClick={handleSearchChange}
+                sx={{ '&:hover': { color: 'error.main' } }}
+              >
+                <Close />
+              </IconButton>
+            </Stack>
+          ) : (
+
+            <Typography
+              sx={{ flex: "1 1 100%", alignContent: "center", paddingLeft: 1 }}
+              variant="h6"
+              id="tableTitle"
+              component="div"
+            >
+              {title}
+            </Typography>
+          )}
+          <Stack direction="row" spacing={0.5}>
+            <IconButton onClick={handleSearchChange}>
               <SearchIcon />
             </IconButton>
-          </Box>
-          <Tooltip title="Filter list">
-            <IconButton onClick={handleOpen}>
-              <FilterListIcon />
-            </IconButton>
-          </Tooltip>
-          {CustomToolbar && <CustomToolbar />}
+            <Tooltip title="Filter list">
+              <IconButton onClick={handleOpen}>
+                <FilterListIcon />
+              </IconButton>
+            </Tooltip>
+            {CustomToolbar && <CustomToolbar />}
+          </Stack>
         </Stack>
       )}
       <Popover
