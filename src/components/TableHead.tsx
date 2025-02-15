@@ -56,19 +56,23 @@ export function EnhancedTableHead<T>({
             padding='normal'
             sortDirection={orderBy === column.name ? order : false}
           >
-            <TableSortLabel
-              active={orderBy === column.name}
-              direction={orderBy === column.name ? order : 'asc'}
-              onClick={createSortHandler(column.name as keyof T)}
-              sx={{ fontWeight: 'bold' }}
-            >
-              {column.label}
-              {orderBy === column.name ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
+            {column.options?.sort !== false ? (
+              <TableSortLabel
+                active={orderBy === column.name}
+                direction={orderBy === column.name ? order : 'asc'}
+                onClick={createSortHandler(column.name as keyof T)}
+                sx={{ fontWeight: 'bold' }}
+              >
+                {column.label}
+                {orderBy === column.name ? (
+                  <Box component="span" sx={visuallyHidden}>
+                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                  </Box>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              <span style={{ fontWeight: 700 }}>{column.label}</span>
+            )}
           </TableCell>
         ))}
       </TableRow>
