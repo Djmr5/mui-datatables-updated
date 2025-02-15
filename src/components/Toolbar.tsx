@@ -1,4 +1,4 @@
-import { Close } from "@mui/icons-material";
+import { Close, CloudDownload, Print } from "@mui/icons-material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
 import { Box, Button, Checkbox, IconButton, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
@@ -46,6 +46,31 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
   // rest value to force re-render of filters
   const [resetCounter, setResetCounter] = useState(0);
   const [openSearch, setOpenSearch] = useState(false);
+
+  function downloadCSV(data: Record<string, any>[], filename: string = "data.csv"): void {
+    // Base case
+    if (data.length === 0) {
+      console.warn("No data to export.");
+      return;
+    }
+  
+    // Create CSV content
+    const headers = Object.keys(data[0] as Record<string, any>);
+    const csvRows = data.map(obj => 
+      headers.map(field => JSON.stringify(obj[field] ?? "")).join(",")
+    );
+    const csvContent = [headers.join(","), ...csvRows].join("\n");
+  
+    // Create Blob and download
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  }
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -201,9 +226,21 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
             </Typography>
           )}
           <Stack direction="row" spacing={0.5}>
-            <IconButton onClick={handleSearchChange}>
-              <SearchIcon />
-            </IconButton>
+            <Tooltip title={options?.translations?.searchTooltip || "Search"}>
+              <IconButton onClick={handleSearchChange}>
+                <SearchIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={options?.translations?.downloadTooltip || "Download CSV"}>
+              <IconButton onClick={() => downloadCSV(data as Record<string, any>[], "data.csv")}>
+                <CloudDownload />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={options?.translations?.printTooltip || "Print"}>
+              <IconButton onClick={() => window.print()}>
+                <Print />
+              </IconButton>
+            </Tooltip>
             <Tooltip title={options?.translations?.filterTooltip || "Filter list"}>
               <IconButton onClick={handleOpen}>
                 <FilterListIcon />

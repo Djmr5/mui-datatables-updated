@@ -25,6 +25,9 @@ export interface Column {
 export interface Options {
   translations?: {
     filterTooltip?: string;
+    searchTooltip?: string;
+    downloadTooltip?: string;
+    printTooltip?: string;
     filtersTitle?: string;
     resetButtonText?: string;
     rowsPerPageText?: string;
