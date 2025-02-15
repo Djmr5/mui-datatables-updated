@@ -37,7 +37,6 @@ interface EnhancedTableState<T> {
   rowsPerPage: number;
   searchQuery: string;
   filterFunc: (row: T) => boolean;
-  filteredData: T[];
   currentData: T[];
   visibleRows: T[];
   emptyRows: number;
@@ -83,7 +82,6 @@ export const MUITable = <T extends object>({
       rowsPerPage: 5,
       searchQuery: "",
       filterFunc: () => true,
-      filteredData: data,
       currentData: data,
       visibleRows: data,
       emptyRows: 0,
@@ -112,46 +110,49 @@ export const MUITable = <T extends object>({
     setState((prevState) => ({ ...prevState, orderBy: orderByKey }));
   }, [data, getDefaultOrderByKey]);
 
-  // Filter data based on applied filters
+  // Data sorting, filtering, and pagination
   React.useEffect(() => {
-    const newFilteredData = data.filter(state.filterFunc);
-
-    setState((prevState) => ({
-      ...prevState,
-      filteredData: newFilteredData,
-      currentData: newFilteredData,
-    }));
-  }, [data, state.filterFunc]);
-
-  // Search data based on search query
-  React.useEffect(() => {
-    const searchResults = state.filteredData.filter((row) =>
-      Object.values(row as Record<string, unknown>).some((value) =>
-        typeof value === 'string' && value.toLowerCase().includes(state.searchQuery)
+    // Apply filters, search query, and sort data
+    const sortedData = [...data]
+      .filter(state.filterFunc)
+      .filter((row) =>
+        Object.values(row as Record<string, unknown>).some((value) =>
+          typeof value === "string" &&
+          value.toLowerCase().includes(state.searchQuery)
+        )
       )
-    );
-    setState((prevState) => ({ ...prevState, currentData: searchResults }));
-  }, [state.filteredData, state.searchQuery]);
+      .sort(getComparator<T, keyof T>(state.order, state.orderBy));
 
-  // Sort and paginate data to display TablePagination and visible rows respectively
-  React.useEffect(() => {
-    const sortedData = [...state.currentData].sort(
-      getComparator<T, keyof T>(state.order, state.orderBy)
-    );
+    // Paginate the processed data
+    const startIndex = state.page * state.rowsPerPage; 
     const paginatedData = sortedData.slice(
-      state.page * state.rowsPerPage,
-      state.page * state.rowsPerPage + state.rowsPerPage
+      startIndex,
+      startIndex + state.rowsPerPage
     );
+
     const calculatedEmptyRows = Math.max(
       0,
-      (1 + state.page) * state.rowsPerPage - state.currentData.length
+      (1 + state.page) * state.rowsPerPage - sortedData.length
     );
+
     setState((prevState) => ({
       ...prevState,
       visibleRows: paginatedData,
       emptyRows: calculatedEmptyRows,
+      selected: prevState.selected.filter((selectedRow) =>
+        data.includes(selectedRow)
+      ),
     }));
-  }, [state.currentData, state.order, state.orderBy, state.page, state.rowsPerPage]);
+  }, [
+    state.filterFunc,
+    state.order,
+    state.orderBy,
+    state.page,
+    state.rowsPerPage,
+    state.searchQuery,
+    data,
+  ]);
+
 
   // Remove selected rows deleted from the data to prevent stale selected state
   React.useEffect(() => {
@@ -248,7 +249,6 @@ export const MUITable = <T extends object>({
             />
             <TableBody>
               {state.visibleRows.map((row, index) => {
-                const selectionKey = state.orderBy;
                 const isItemSelected = state.selected.some((selectedRow) => selectedRow === row);
                 const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -259,7 +259,7 @@ export const MUITable = <T extends object>({
                     role="checkbox"
                     aria-checked={isItemSelected}
                     tabIndex={-1}
-                    key={String(row[selectionKey])}
+                    key={index}
                     selected={isItemSelected}
                     sx={{ cursor: 'pointer' }}
                   >
