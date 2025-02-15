@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, Button, Checkbox, IconButton, InputBase, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
+import { Box, Button, Checkbox, IconButton, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
 import { Column } from "./MUITable";
@@ -234,7 +234,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
             Reset
           </Button>
         </Stack>
-        <Stack key={resetCounter} spacing={2}>
+        <Stack key={resetCounter}>
           {filterConfig.map(({ key, type, min, max }) => {
             const currentFilter = getFilter(key);
             return (
@@ -259,15 +259,14 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
                   />
                 )}
                 {type === "string" && (
-                  <InputBase
+                  <TextField
                     placeholder="Search..."
+                    size="small"
                     value={(currentFilter?.value as string) || ""}
                     onChange={(e) => handleFilterChange(key, e.target.value)}
                     sx={{
-                      padding: 1,
-                      border: 1,
-                      borderColor: "lightgray",
-                      borderRadius: 1,
+                      marginBottom: 1,
+                      paddingY: 0.5,
                       width: "100%",
                     }}
                   />
