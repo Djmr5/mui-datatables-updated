@@ -10,6 +10,7 @@ import React, { useCallback } from 'react';
 import { EnhancedTableHead } from './TableHead';
 import { CustomSelectedToolbarProps, EnhancedTableToolbar } from './Toolbar';
 import { getComparator, Order } from './utils';
+import { LabelDisplayedRowsArgs } from '@mui/material/TablePagination';
 
 export interface Column {
   name: string;
@@ -21,6 +22,18 @@ export interface Column {
   }
 }
 
+export interface Options {
+  translations?: {
+    filterTooltip?: string;
+    filtersTitle?: string;
+    resetButtonText?: string;
+    rowsPerPageText?: string;
+    searchPlaceholder?: string;
+    selectedTextRenderer?: (selected: number) => string;
+    labelDisplayedRows?: ({ from, to, count }: LabelDisplayedRowsArgs) => string;
+  }
+}
+
 export interface EnhancedTableProps<T extends object> extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   title: string;
   data: T[];
@@ -29,6 +42,7 @@ export interface EnhancedTableProps<T extends object> extends React.DetailedHTML
   defaultOrder?: Order;
   excludedColumns?: (keyof T)[];
   columns?: Column[];
+  options?: Options;
   CustomToolbar?: React.FC;
   CustomSelectedToolbar?: React.FC<CustomSelectedToolbarProps<T>>;
 }
@@ -56,6 +70,7 @@ export const MUITable = <T extends object>({
   columns: passedColumns,
   CustomToolbar,
   CustomSelectedToolbar,
+  options,
   ...rest
 }: EnhancedTableProps<T>) => {
 
@@ -232,6 +247,7 @@ export const MUITable = <T extends object>({
           CustomToolbar={CustomToolbar}
           CustomSelectedToolbar={CustomSelectedToolbar}
           data={data}
+          options={options}
         />
         <TableContainer>
           <Table
@@ -312,6 +328,8 @@ export const MUITable = <T extends object>({
           page={state.page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage={options?.translations?.rowsPerPageText || "Rows per page"}
+          labelDisplayedRows={options?.translations?.labelDisplayedRows || (({ from, to, count }) => `${from}-${to} of ${count}`)}
         />
       </Paper>
     </div>

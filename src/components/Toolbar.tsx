@@ -4,7 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Box, Button, Checkbox, IconButton, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
-import { Column } from "./MUITable";
+import { Column, Options } from "./MUITable";
 
 interface Filter {
   key: string;
@@ -34,10 +34,11 @@ interface EnhancedTableToolbarProps<T> {
   CustomToolbar?: React.FC;
   CustomSelectedToolbar?: React.FC<CustomSelectedToolbarProps<T>>;
   data?: T[];
+  options?: Options;
 }
 
 export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
-  const { title, numSelected, selected, onFilterChange, onSearch, columns, CustomToolbar, CustomSelectedToolbar, data } = props;
+  const { title, numSelected, selected, onFilterChange, onSearch, columns, CustomToolbar, CustomSelectedToolbar, data, options } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [filters, setFilters] = useState<Filter[]>([]);
@@ -155,7 +156,9 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
             variant="subtitle1"
             component="div"
           >
-            {numSelected} selected
+            {options?.translations?.selectedTextRenderer
+              ? options.translations.selectedTextRenderer(numSelected)
+              : `${numSelected} selected`}
           </Typography>
           {CustomSelectedToolbar && (
             <CustomSelectedToolbar data={data} selected={selected} />
@@ -172,7 +175,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
             <Stack direction="row" alignItems="center">
               <SearchIcon />
               <TextField
-                placeholder="Search…"
+                placeholder={options?.translations?.searchPlaceholder || "Search..."}
                 onChange={(e) => onSearch(e.target.value)}
                 variant="standard"
                 autoFocus
@@ -201,7 +204,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
             <IconButton onClick={handleSearchChange}>
               <SearchIcon />
             </IconButton>
-            <Tooltip title="Filter list">
+            <Tooltip title={options?.translations?.filterTooltip || "Filter list"}>
               <IconButton onClick={handleOpen}>
                 <FilterListIcon />
               </IconButton>
@@ -228,10 +231,10 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
       >
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Filters
+            {options?.translations?.filtersTitle || "Filters"}
           </Typography>
           <Button variant="contained" size="small" sx={{ height: "fit-content" }} onClick={resetFilters}>
-            Reset
+            {options?.translations?.resetButtonText || "Reset"}
           </Button>
         </Stack>
         <Stack key={resetCounter}>
@@ -260,7 +263,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
                 )}
                 {type === "string" && (
                   <TextField
-                    placeholder="Search..."
+                    placeholder={options?.translations?.searchPlaceholder || "Search..."}
                     size="small"
                     value={(currentFilter?.value as string) || ""}
                     onChange={(e) => handleFilterChange(key, e.target.value)}
