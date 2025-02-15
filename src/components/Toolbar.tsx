@@ -5,6 +5,7 @@ import { Box, Button, Checkbox, IconButton, Popover, Slider, Stack, TextField, T
 import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
 import { Column, Options } from "./MUITable";
+import { UseReactToPrintFn } from "react-to-print";
 
 interface Filter {
   key: string;
@@ -30,6 +31,7 @@ interface EnhancedTableToolbarProps<T> {
   selected: readonly T[];
   onFilterChange: (filterFunc: (row: T) => boolean) => void;
   onSearch: (query: string) => void;
+  printFn: UseReactToPrintFn;
   columns: Column[];
   CustomToolbar?: React.FC;
   CustomSelectedToolbar?: React.FC<CustomSelectedToolbarProps<T>>;
@@ -38,7 +40,7 @@ interface EnhancedTableToolbarProps<T> {
 }
 
 export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
-  const { title, numSelected, selected, onFilterChange, onSearch, columns, CustomToolbar, CustomSelectedToolbar, data, options } = props;
+  const { title, numSelected, selected, onFilterChange, onSearch, printFn, columns, CustomToolbar, CustomSelectedToolbar, data, options } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [filters, setFilters] = useState<Filter[]>([]);
@@ -53,14 +55,14 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
       console.warn("No data to export.");
       return;
     }
-  
+
     // Create CSV content
     const headers = Object.keys(data[0] as Record<string, any>);
-    const csvRows = data.map(obj => 
+    const csvRows = data.map(obj =>
       headers.map(field => JSON.stringify(obj[field] ?? "")).join(",")
     );
     const csvContent = [headers.join(","), ...csvRows].join("\n");
-  
+
     // Create Blob and download
     const blob = new Blob([csvContent], { type: "text/csv" });
     const link = document.createElement("a");
@@ -237,7 +239,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
               </IconButton>
             </Tooltip>
             <Tooltip title={options?.translations?.printTooltip || "Print"}>
-              <IconButton onClick={() => window.print()}>
+              <IconButton onClick={() => printFn()}>
                 <Print />
               </IconButton>
             </Tooltip>

@@ -6,7 +6,8 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
+import { useReactToPrint } from "react-to-print";
 import { EnhancedTableHead } from './TableHead';
 import { CustomSelectedToolbarProps, EnhancedTableToolbar } from './Toolbar';
 import { getComparator, Order } from './utils';
@@ -76,6 +77,8 @@ export const MUITable = <T extends object>({
   options,
   ...rest
 }: EnhancedTableProps<T>) => {
+  const tableRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef: tableRef });
 
   const getDefaultOrderByKey = React.useCallback((): keyof T => {
     if (data.length === 0) return "id" as keyof T;
@@ -238,7 +241,7 @@ export const MUITable = <T extends object>({
   }, []);
 
   return (
-    <div {...rest}>
+    <div {...rest} ref={tableRef}>
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar
           title={title}
@@ -246,6 +249,7 @@ export const MUITable = <T extends object>({
           selected={state.selected}
           onFilterChange={handleFilterChange}
           onSearch={handleSearch}
+          printFn={reactToPrintFn}
           columns={columns}
           CustomToolbar={CustomToolbar}
           CustomSelectedToolbar={CustomSelectedToolbar}
