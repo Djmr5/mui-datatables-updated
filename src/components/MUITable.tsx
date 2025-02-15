@@ -7,24 +7,28 @@ import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import React, { useCallback } from 'react';
-import { EnhancedTableHead, HeadCell } from './TableHead';
+import { EnhancedTableHead } from './TableHead';
 import { CustomSelectedToolbarProps, EnhancedTableToolbar } from './Toolbar';
 import { getComparator, Order } from './utils';
 
-export interface CustomCell<T> {
-  id: keyof T;
-  render: (row: T, key: keyof T) => React.ReactNode;
+export interface Column {
+  name: string;
+  label?: string;
+  options?: {
+    customBodyRender?: (value: any) => React.ReactNode;
+    filter?: boolean;
+    sort?: boolean;
+  }
 }
 
 export interface EnhancedTableProps<T extends object> extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   title: string;
   data: T[];
-  headCells?: HeadCell<T>[];
   deactivateSelect?: boolean;
   defaultOrderBy?: string;
   defaultOrder?: Order;
   excludedColumns?: (keyof T)[];
-  customCells?: CustomCell<T>[];
+  columns?: Column[];
   CustomToolbar?: React.FC;
   CustomSelectedToolbar?: React.FC<CustomSelectedToolbarProps<T>>;
 }
@@ -45,12 +49,11 @@ interface EnhancedTableState<T> {
 export const MUITable = <T extends object>({
   title,
   data,
-  headCells: passedHeadCells,
   deactivateSelect,
   defaultOrderBy,
   defaultOrder,
   excludedColumns,
-  customCells,
+  columns: passedColumns,
   CustomToolbar,
   CustomSelectedToolbar,
   ...rest
@@ -88,18 +91,17 @@ export const MUITable = <T extends object>({
     };
   });
 
-  const generateHeadCells = React.useCallback((): HeadCell<T>[] => {
+  const generateColumns = React.useCallback((): Column[] => {
     if (data.length === 0) return [];
     return Object.keys(data[0] as object)
       .filter((key) => !(excludedColumns || []).includes(key as keyof T))
       .map((key) => ({
-        id: key as keyof T,
+        name: key,
         label: key.charAt(0).toUpperCase() + key.slice(1),
-        numeric: typeof data[0][key as keyof T] === 'number',
       }));
   }, [data, excludedColumns]);
 
-  const headCells = passedHeadCells || generateHeadCells();
+  const columns = passedColumns || generateColumns();
 
   const handleSearch = (query: string) => {
     setState((prevState) => ({ ...prevState, searchQuery: query.toLowerCase() }));
@@ -124,7 +126,7 @@ export const MUITable = <T extends object>({
       .sort(getComparator<T, keyof T>(state.order, state.orderBy));
 
     // Paginate the processed data
-    const startIndex = state.page * state.rowsPerPage; 
+    const startIndex = state.page * state.rowsPerPage;
     const paginatedData = sortedData.slice(
       startIndex,
       startIndex + state.rowsPerPage
@@ -226,7 +228,7 @@ export const MUITable = <T extends object>({
           selected={state.selected}
           onFilterChange={handleFilterChange}
           onSearch={handleSearch}
-          headCells={headCells}
+          columns={columns}
           CustomToolbar={CustomToolbar}
           CustomSelectedToolbar={CustomSelectedToolbar}
           data={data}
@@ -238,7 +240,7 @@ export const MUITable = <T extends object>({
             size="small"
           >
             <EnhancedTableHead
-              headCells={headCells}
+              columns={columns}
               numSelected={state.selected.length}
               order={state.order}
               orderBy={state.orderBy}
@@ -274,20 +276,17 @@ export const MUITable = <T extends object>({
                         />
                       </TableCell>
                     )}
-                    {headCells.map((headCell, cellIndex) => (
+                    {columns.map((column, cellIndex) => (
                       <TableCell
-                        key={String(headCell.id)}
+                        key={String(column.name)}
                         component={cellIndex === 0 ? "th" : undefined}
                         id={cellIndex === 0 ? labelId : undefined}
                         scope={cellIndex === 0 ? "row" : undefined}
                         padding="normal"
                       >
-                        {customCells &&
-                          customCells.some((renderer) => renderer.id === headCell.id)
-                          ? customCells
-                            .find((renderer) => renderer.id === headCell.id)
-                            ?.render(row, headCell.id)
-                          : String(row[headCell.id])}
+                        {column.options?.customBodyRender
+                          ? column.options.customBodyRender((row as Record<string, any>)[column.name])
+                          : String((row as Record<string, any>)[column.name])}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -299,7 +298,7 @@ export const MUITable = <T extends object>({
                     height: 33 * state.emptyRows,
                   }}
                 >
-                  <TableCell colSpan={headCells.length + 1} />
+                  <TableCell colSpan={columns.length + 1} />
                 </TableRow>
               )}
             </TableBody>

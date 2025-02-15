@@ -4,7 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Box, Button, Checkbox, IconButton, InputBase, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
-import { HeadCell } from "./TableHead";
+import { Column } from "./MUITable";
 
 interface Filter {
   key: string;
@@ -30,14 +30,14 @@ interface EnhancedTableToolbarProps<T> {
   selected: readonly T[];
   onFilterChange: (filterFunc: (row: T) => boolean) => void;
   onSearch: (query: string) => void;
-  headCells: HeadCell<T>[];
+  columns: Column[];
   CustomToolbar?: React.FC;
   CustomSelectedToolbar?: React.FC<CustomSelectedToolbarProps<T>>;
   data?: T[];
 }
 
 export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
-  const { title, numSelected, selected, onFilterChange, onSearch, headCells, CustomToolbar, CustomSelectedToolbar, data } = props;
+  const { title, numSelected, selected, onFilterChange, onSearch, columns, CustomToolbar, CustomSelectedToolbar, data } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [filters, setFilters] = useState<Filter[]>([]);
@@ -48,7 +48,8 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
 
   useEffect(() => {
     if (data && data.length > 0) {
-      const inferredConfig = Object.keys(data[0] as object).map((key: string) => {
+      const inferredConfig = columns.map((column) => {
+        const key = column.name;
         const values = data.map((row) => (row as Record<string, any>)[key]);
         const isNumber = values.every((val) => typeof val === "number");
         const inferredType = isNumber ? "number" : typeof values[0] === "boolean" ? "boolean" : "string";
@@ -61,7 +62,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
       });
       setFilterConfig(inferredConfig);
     }
-  }, [data]);
+  }, [data, columns]);
 
   useEffect(() => {
     const newFilterFunc = (row: T) => {
@@ -239,7 +240,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
             return (
               <Box key={key}>
                 <Typography variant="subtitle1">
-                  {headCells.find((cell) => cell.id === key)?.label}
+                  {columns.find((cell) => cell.name === key)?.label}
                 </Typography>
                 {type === "number" && min !== undefined && max !== undefined && (
                   <Slider
