@@ -2,6 +2,14 @@
 
 ## Installation
 
+If not already installed, install the Material-UI library:
+
+```bash
+npm install @mui/material @emotion/react @emotion/styled @mui/icons-material
+```
+
+Then install the mui-datatables-updated package:
+
 ```bash
 npm install mui-datatables-updated
 ```
