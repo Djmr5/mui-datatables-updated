@@ -67,6 +67,40 @@ describe('MUITable global search', () => {
     });
   });
 
+  it('keeps search text when toggled and clears only with X', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MUITable<Data>
+        title="Desserts"
+        data={rows}
+        columns={testDataColumns}
+        deactivateSelect
+      />,
+    );
+
+    await user.click(getSearchButton());
+    await user.type(screen.getByPlaceholderText('Search...'), 'donut');
+
+    await waitFor(() => {
+      expect(screen.getByText('Donut')).toBeInTheDocument();
+      expect(screen.queryByText('Cupcake')).not.toBeInTheDocument();
+    });
+
+    await user.click(getSearchButton());
+    await user.click(getSearchButton());
+
+    expect(screen.getByPlaceholderText('Search...')).toHaveValue('donut');
+
+    await user.click(screen.getByLabelText('Clear search'));
+
+    await waitFor(() => {
+      expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
+      expect(screen.getByText('Cupcake')).toBeInTheDocument();
+      expect(screen.getByText('Donut')).toBeInTheDocument();
+    });
+  });
+
   it('sorts by calories when clicking the calories header', async () => {
     const user = userEvent.setup();
 

@@ -62,6 +62,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
   // rest value to force re-render of filters
   const [resetCounter, setResetCounter] = useState(0);
   const [openSearch, setOpenSearch] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
 
   function downloadCSV(data: Record<string, any>[], filename: string = "data.csv"): void {
     // Base case
@@ -147,6 +148,17 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
     setOpenSearch((prev) => !prev);
   };
 
+  const handleSearchInputChange = (value: string) => {
+    setSearchValue(value);
+    onSearch(value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchValue('');
+    onSearch('');
+    setOpenSearch(false);
+  };
+
   const open = Boolean(anchorEl);
 
   const getFilter = (key: string): Filter | undefined =>
@@ -225,14 +237,16 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
               <SearchIcon />
               <TextField
                 placeholder={options?.translations?.searchPlaceholder || "Search..."}
-                onChange={(e) => onSearch(e.target.value)}
+                value={searchValue}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
                 variant="standard"
                 autoFocus
                 fullWidth
                 sx={{ marginLeft: 1 }}
               />
               <IconButton
-                onClick={handleSearchChange}
+                onClick={handleClearSearch}
+                aria-label="Clear search"
                 sx={{ '&:hover': { color: 'error.main' } }}
               >
                 <Close />
