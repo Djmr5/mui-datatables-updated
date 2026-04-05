@@ -4,8 +4,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Box, Button, Checkbox, IconButton, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
-import { Column, Options } from "./MUITable";
-import { UseReactToPrintFn } from "react-to-print";
+import type { Column, Options } from "./MUITable";
+import type { UseReactToPrintFn } from "react-to-print";
 
 interface Filter {
   key: string;
@@ -18,6 +18,20 @@ interface FilterConfig {
   type: "number" | "string" | "boolean";
   min?: number;
   max?: number;
+}
+
+function isSameFilterConfig(a: FilterConfig[], b: FilterConfig[]): boolean {
+  if (a.length !== b.length) return false;
+
+  return a.every((entry, index) => {
+    const other = b[index];
+    return (
+      entry.key === other.key &&
+      entry.type === other.type &&
+      entry.min === other.min &&
+      entry.max === other.max
+    );
+  });
 }
 
 export interface CustomSelectedToolbarProps<T> {
@@ -88,7 +102,15 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
           max: isNumber ? Math.max(...values) : undefined,
         };
       });
-      setFilterConfig(inferredConfig);
+
+      setFilterConfig((previousConfig) => {
+        if (isSameFilterConfig(previousConfig, inferredConfig)) {
+          return previousConfig;
+        }
+        return inferredConfig;
+      });
+    } else {
+      setFilterConfig((previousConfig) => (previousConfig.length === 0 ? previousConfig : []));
     }
   }, [data, columns]);
 

@@ -16,8 +16,14 @@ export default {
     },
   ],
   plugins: [
-    peerDepsExternal({ includeDependencies: true }),
+    peerDepsExternal(), 
     typescript(),
   ],
-  external: ['react', 'react-dom', '@mui/material'],
+  external: [
+    'react', 
+    'react-dom', 
+    'react-to-print',
+    /^@mui\//, 
+    /^@emotion\//
+  ],
 };

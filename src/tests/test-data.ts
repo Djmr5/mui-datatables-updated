@@ -1,4 +1,5 @@
-import { HeadCell } from "../components/TableHead";
+import type { Column } from "../components/MUITable";
+
 export interface Data {
   id: number;
   calories: number;
@@ -60,30 +61,29 @@ export const rows = [
   createData(31, 'Grape', 356, 16.0, 49, 3.9),
 ];
 
-export const headCells: HeadCell<typeof rows[0]>[] = [
+export const testDataColumns: Column[] = [
   {
-    id: 'name',
-    numeric: false,
+    name: 'name',
     label: 'Dessert (100g serving)',
   },
   {
-    id: 'calories',
-    numeric: true,
+    name: 'calories',
     label: 'Calories',
   },
   {
-    id: 'fat',
-    numeric: true,
+    name: 'fat',
     label: 'Fat (g)',
   },
   {
-    id: 'carbs',
-    numeric: true,
+    name: 'carbs',
     label: 'Carbs (g)',
   },
   {
-    id: 'protein',
-    numeric: true,
+    name: 'protein',
     label: 'Protein (g)',
+    options: {
+      customBodyRender: (value: number) => (value >= 6 ? 'High Protein' : 'Low Protein'),
+      customSearchValue: (value: number) => (value >= 6 ? 'High Protein' : 'Low Protein'),
+    },
   },
 ];

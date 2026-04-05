@@ -11,7 +11,8 @@
     "declaration": true,
     "declarationDir": "./dist/types",
     "outDir": "./dist",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
   },
   "include": [
     "src/**/*.ts",
