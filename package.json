@@ -1,11 +1,14 @@
 {
   "name": "mui-datatables-updated",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MUI Datatable library inspired by the gregnb/mui-datatables project, featuring an up-to-date implementation with Typescript Support.",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
