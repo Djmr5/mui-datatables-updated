@@ -5,20 +5,20 @@
 If not already installed, install the Material-UI library:
 
 ```bash
-npm install @mui/material @emotion/react @emotion/styled @mui/icons-material
+npm install @mui/material @emotion/react @emotion/styled @mui/icons-material @mui/utils
 ```
 
-Then install the mui-datatables-updated package:
+Then install the mui-datatables-updated package along with its peer dependencies:
 
 ```bash
-npm install mui-datatables-updated
+npm install mui-datatables-updated react-to-print
 ```
 
 ## Usage
 
 ```jsx
 import React from 'react';
-import MUIDataTable from 'mui-datatables-updated';
+import { MUITable } from 'mui-datatables-updated';
 
 const sampleData = [
   {
@@ -58,7 +58,7 @@ export default function App() {
 ### Example
 
 ```jsx
-import MUITable from 'mui-datatables-updated'
+import { MUITable } from 'mui-datatables-updated';
 
 const sampleColumns = [
   {
@@ -136,6 +136,7 @@ On each column object, you have the ability to customize columns to show the fil
 | Name | Type | Description |
 | --- | --- | --- |
 | customBodyRender | function | Function to render custom content in the column |
+| customSearchValue | function | Function to provide searchable text/value for global search (useful with customBodyRender) |
 | filter | boolean | Show filter dropdown in the column |
 | sort | boolean | Enable sorting when clicking on the column header |
 
@@ -148,6 +149,7 @@ const columns = [
   label: "Is Active",
   options: {
     customBodyRender: (value: boolean) => value ? 'Yes' : 'No',
+    customSearchValue: (value: boolean) => value ? 'Yes' : 'No',
     filter: true,
     sort: false
   }

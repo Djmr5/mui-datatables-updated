@@ -5,8 +5,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import { visuallyHidden } from '@mui/utils';
-import { Column } from './MUITable';
-import { Order } from './utils';
+import type { Column } from './MUITable';
+import type { Order } from './utils';
 
 interface EnhancedTableProps<T> {
   numSelected: number;

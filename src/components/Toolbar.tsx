@@ -4,8 +4,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Box, Button, Checkbox, IconButton, Popover, Slider, Stack, TextField, Toolbar, Tooltip, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
-import { Column, Options } from "./MUITable";
-import { UseReactToPrintFn } from "react-to-print";
+import type { Column, Options } from "./MUITable";
+import type { UseReactToPrintFn } from "react-to-print";
+import { columnMatchesSearchQuery } from "./utils";
 
 interface Filter {
   key: string;
@@ -18,6 +19,20 @@ interface FilterConfig {
   type: "number" | "string" | "boolean";
   min?: number;
   max?: number;
+}
+
+function isSameFilterConfig(a: FilterConfig[], b: FilterConfig[]): boolean {
+  if (a.length !== b.length) return false;
+
+  return a.every((entry, index) => {
+    const other = b[index];
+    return (
+      entry.key === other.key &&
+      entry.type === other.type &&
+      entry.min === other.min &&
+      entry.max === other.max
+    );
+  });
 }
 
 export interface CustomSelectedToolbarProps<T> {
@@ -39,7 +54,7 @@ interface EnhancedTableToolbarProps<T> {
   options?: Options;
 }
 
-export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
+export function EnhancedTableToolbar<T extends object>(props: EnhancedTableToolbarProps<T>) {
   const { title, numSelected, selected, onFilterChange, onSearch, printFn, columns, CustomToolbar, CustomSelectedToolbar, data, options } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -48,6 +63,7 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
   // rest value to force re-render of filters
   const [resetCounter, setResetCounter] = useState(0);
   const [openSearch, setOpenSearch] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
 
   function downloadCSV(data: Record<string, any>[], filename: string = "data.csv"): void {
     // Base case
@@ -88,7 +104,15 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
           max: isNumber ? Math.max(...values) : undefined,
         };
       });
-      setFilterConfig(inferredConfig);
+
+      setFilterConfig((previousConfig) => {
+        if (isSameFilterConfig(previousConfig, inferredConfig)) {
+          return previousConfig;
+        }
+        return inferredConfig;
+      });
+    } else {
+      setFilterConfig((previousConfig) => (previousConfig.length === 0 ? previousConfig : []));
     }
   }, [data, columns]);
 
@@ -102,6 +126,12 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
           return rowValue >= min && rowValue <= max;
         }
         if (filter.type === "string") {
+          const column = columns.find((candidate) => candidate.name === filter.key);
+
+          if (column) {
+            return columnMatchesSearchQuery(row, column, String(filter.value));
+          }
+
           return rowValue.toString().toLowerCase().includes((filter.value as string).toLowerCase());
         }
         if (filter.type === "boolean") {
@@ -123,6 +153,17 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
 
   const handleSearchChange = () => {
     setOpenSearch((prev) => !prev);
+  };
+
+  const handleSearchInputChange = (value: string) => {
+    setSearchValue(value);
+    onSearch(value);
+  };
+
+  const handleClearSearch = () => {
+    setSearchValue('');
+    onSearch('');
+    setOpenSearch(false);
   };
 
   const open = Boolean(anchorEl);
@@ -203,14 +244,16 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
               <SearchIcon />
               <TextField
                 placeholder={options?.translations?.searchPlaceholder || "Search..."}
-                onChange={(e) => onSearch(e.target.value)}
+                value={searchValue}
+                onChange={(e) => handleSearchInputChange(e.target.value)}
                 variant="standard"
                 autoFocus
                 fullWidth
                 sx={{ marginLeft: 1 }}
               />
               <IconButton
-                onClick={handleSearchChange}
+                onClick={handleClearSearch}
+                aria-label="Clear search"
                 sx={{ '&:hover': { color: 'error.main' } }}
               >
                 <Close />

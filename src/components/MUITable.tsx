@@ -6,18 +6,19 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { useReactToPrint } from "react-to-print";
 import { EnhancedTableHead } from './TableHead';
-import { CustomSelectedToolbarProps, EnhancedTableToolbar } from './Toolbar';
-import { getComparator, Order } from './utils';
-import { LabelDisplayedRowsArgs } from '@mui/material/TablePagination';
+import { type CustomSelectedToolbarProps, EnhancedTableToolbar } from './Toolbar';
+import { type Order, getComparator, rowMatchesSearchQuery } from './utils';
+import type { LabelDisplayedRowsArgs } from '@mui/material/TablePagination';
 
 export interface Column {
   name: string;
   label?: string;
   options?: {
     customBodyRender?: (value: any) => React.ReactNode;
+    customSearchValue?: (value: any, row: Record<string, any>) => unknown;
     filter?: boolean;
     sort?: boolean;
   }
@@ -122,7 +123,7 @@ export const MUITable = <T extends object>({
       }));
   }, [data, excludedColumns]);
 
-  const columns = passedColumns || generateColumns();
+  const columns = useMemo(() => passedColumns || generateColumns(), [passedColumns, generateColumns]);
 
   const handleSearch = (query: string) => {
     setState((prevState) => ({ ...prevState, searchQuery: query.toLowerCase() }));
@@ -138,12 +139,7 @@ export const MUITable = <T extends object>({
     // Apply filters, search query, and sort data
     const sortedData = [...data]
       .filter(state.filterFunc)
-      .filter((row) =>
-        Object.values(row as Record<string, unknown>).some((value) =>
-          typeof value === "string" &&
-          value.toLowerCase().includes(state.searchQuery)
-        )
-      )
+      .filter((row) => rowMatchesSearchQuery(row, columns, state.searchQuery))
       .sort(getComparator<T, keyof T>(state.order, state.orderBy));
 
     // Paginate the processed data
@@ -174,6 +170,7 @@ export const MUITable = <T extends object>({
     state.rowsPerPage,
     state.searchQuery,
     data,
+    columns,
   ]);
 
 
