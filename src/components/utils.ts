@@ -3,6 +3,7 @@ export type Order = 'asc' | 'desc';
 export interface SearchColumn<T extends object> {
   name: string;
   options?: {
+    customBodyRender?: (value: any) => unknown;
     customSearchValue?: (value: any, row: Record<string, any>) => unknown;
   };
 }
@@ -22,7 +23,7 @@ function descendingComparator<T>(a: T, b: T): number {
   return 0;
 }
 
-function toSearchTokens(value: unknown): string[] {
+export function toSearchTokens(value: unknown): string[] {
   if (value === null || value === undefined) return [];
 
   if (Array.isArray(value)) {
@@ -49,6 +50,39 @@ function toSearchTokens(value: unknown): string[] {
   return [];
 }
 
+export function getColumnSearchTokens<T extends object>(
+  row: T,
+  column: SearchColumn<T>,
+): string[] {
+  const rawValue = (row as Record<string, unknown>)[column.name];
+  const rawTokens = toSearchTokens(rawValue);
+
+  const customSearchValue = column.options?.customSearchValue;
+  const customBodyRender = column.options?.customBodyRender;
+
+  const renderedValue = customSearchValue
+    ? customSearchValue(rawValue, row as Record<string, any>)
+    : customBodyRender
+      ? customBodyRender(rawValue)
+      : undefined;
+
+  const renderedTokens = toSearchTokens(renderedValue);
+  return [...rawTokens, ...renderedTokens];
+}
+
+export function columnMatchesSearchQuery<T extends object>(
+  row: T,
+  column: SearchColumn<T>,
+  searchQuery: string,
+): boolean {
+  const normalizedQuery = searchQuery.toLowerCase();
+  if (!normalizedQuery) return true;
+
+  return getColumnSearchTokens(row, column).some((token) =>
+    token.includes(normalizedQuery),
+  );
+}
+
 export function rowMatchesSearchQuery<T extends object>(
   row: T,
   columns: SearchColumn<T>[],
@@ -58,21 +92,6 @@ export function rowMatchesSearchQuery<T extends object>(
 
   if (!normalizedQuery) return true;
 
-  return columns.some((column) => {
-    const rawValue = (row as Record<string, unknown>)[column.name];
-    const rawTokens = toSearchTokens(rawValue);
-
-    if (rawTokens.some((token) => token.includes(normalizedQuery))) {
-      return true;
-    }
-
-    const customSearchValue = column.options?.customSearchValue;
-    if (!customSearchValue) {
-      return false;
-    }
-
-    const renderedTokens = toSearchTokens(customSearchValue(rawValue, row));
-    return renderedTokens.some((token) => token.includes(normalizedQuery));
-  });
+  return columns.some((column) => columnMatchesSearchQuery(row, column, normalizedQuery));
 }
 

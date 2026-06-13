@@ -45,6 +45,19 @@ describe('rowMatchesSearchQuery', () => {
     expect(rowMatchesSearchQuery(row, columns, 'enabled')).toBe(true);
   });
 
+  it('matches customBodyRender output when customSearchValue is not provided', () => {
+    const emojiColumns: SearchColumn<Row>[] = [
+      {
+        name: 'active',
+        options: {
+          customBodyRender: (value) => (value ? ':)' : ':('),
+        },
+      },
+    ];
+
+    expect(rowMatchesSearchQuery(row, emojiColumns, ':)')).toBe(true);
+  });
+
   it('matches array values', () => {
     expect(rowMatchesSearchQuery(row, columns, 'react')).toBe(true);
   });

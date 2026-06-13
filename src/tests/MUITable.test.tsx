@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { MUITable } from '../components/MUITable';
+import type { Column } from '../components/MUITable';
 import { type Data, rows, testDataColumns } from './test-data';
 
 function getSearchButton() {
@@ -119,6 +120,93 @@ describe('MUITable global search', () => {
       const tableRows = screen.getAllByRole('checkbox');
       const firstRow = tableRows[0];
       expect(within(firstRow).getByText('Frozen yoghurt')).toBeInTheDocument();
+    });
+  });
+
+  it('matches customBodyRender text in global search without customSearchValue', async () => {
+    const user = userEvent.setup();
+
+    const emojiData = [
+      { id: 1, active: true },
+      { id: 2, active: false },
+    ];
+
+    const emojiColumns: Column[] = [
+      {
+        name: 'active',
+        label: 'Status',
+        options: {
+          customBodyRender: (value: boolean) => (value ? ':)' : ':('),
+        },
+      },
+    ];
+
+    render(
+      <MUITable<(typeof emojiData)[number]>
+        title="Emoji"
+        data={emojiData}
+        columns={emojiColumns}
+        deactivateSelect
+      />,
+    );
+
+    await user.click(getSearchButton());
+    await user.type(screen.getByPlaceholderText('Search...'), ':)');
+
+    await waitFor(() => {
+      expect(screen.getByText(':)')).toBeInTheDocument();
+      expect(screen.queryByText(':(')).not.toBeInTheDocument();
+    });
+  });
+
+  it('matches customBodyRender text in string filters', async () => {
+    const user = userEvent.setup();
+
+    const formatDate = (value: string) => {
+      if (!value) return '-';
+      const date = new Date(value);
+      return new Intl.DateTimeFormat('es-ES', {
+        day: '2-digit',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'UTC',
+      }).format(date).replace(',', '');
+    };
+
+    const dateData = [
+      { id: 1, createdAt: '2026-05-20T20:01:00Z' },
+      { id: 2, createdAt: '2026-01-01T10:15:00Z' },
+    ];
+
+    const dateColumns: Column[] = [
+      {
+        name: 'createdAt',
+        label: 'Created At',
+        options: {
+          customBodyRender: (value: string) => formatDate(value),
+        },
+      },
+    ];
+
+    render(
+      <MUITable<(typeof dateData)[number]>
+        title="Dates"
+        data={dateData}
+        columns={dateColumns}
+        deactivateSelect
+      />,
+    );
+
+    await user.click(screen.getByLabelText('Filter list'));
+    const filterInputs = screen.getAllByPlaceholderText('Search...');
+    await user.type(filterInputs[filterInputs.length - 1], 'mayo');
+    await user.click(document.body);
+
+    await waitFor(() => {
+      expect(screen.getByText((content) => content.toLowerCase().includes('mayo'))).toBeInTheDocument();
+      expect(screen.queryByText((content) => content.toLowerCase().includes('enero'))).not.toBeInTheDocument();
     });
   });
 });

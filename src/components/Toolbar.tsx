@@ -6,6 +6,7 @@ import { alpha } from "@mui/material/styles";
 import React, { useEffect, useState } from "react";
 import type { Column, Options } from "./MUITable";
 import type { UseReactToPrintFn } from "react-to-print";
+import { columnMatchesSearchQuery } from "./utils";
 
 interface Filter {
   key: string;
@@ -53,7 +54,7 @@ interface EnhancedTableToolbarProps<T> {
   options?: Options;
 }
 
-export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
+export function EnhancedTableToolbar<T extends object>(props: EnhancedTableToolbarProps<T>) {
   const { title, numSelected, selected, onFilterChange, onSearch, printFn, columns, CustomToolbar, CustomSelectedToolbar, data, options } = props;
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -125,6 +126,12 @@ export function EnhancedTableToolbar<T>(props: EnhancedTableToolbarProps<T>) {
           return rowValue >= min && rowValue <= max;
         }
         if (filter.type === "string") {
+          const column = columns.find((candidate) => candidate.name === filter.key);
+
+          if (column) {
+            return columnMatchesSearchQuery(row, column, String(filter.value));
+          }
+
           return rowValue.toString().toLowerCase().includes((filter.value as string).toLowerCase());
         }
         if (filter.type === "boolean") {
