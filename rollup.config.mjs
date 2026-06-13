@@ -30,5 +30,5 @@ export default {
       exclude: ['node_modules', '**/*.test.ts'],
     }),
   ],
-  external: [/node_modules/, /^@mui\//, /^@emotion\//],
+  external: ['tslib', /^@mui\//, /^@emotion\//],
 };
